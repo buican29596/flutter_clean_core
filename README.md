@@ -26,8 +26,18 @@ This package provides a standardized core infrastructure including configurable 
 
 ## Installation
 
-Add the package path to the `pubspec.yaml` of your project:
+You can integrate the package into the `pubspec.yaml` of your project using either of the following methods:
 
+### Option A: From GitHub Repository (Recommended for Team Distribution)
+```yaml
+dependencies:
+  flutter_clean_core:
+    git:
+      url: https://github.com/buican29596/flutter_clean_core.git
+      ref: main # Or use a specific tag/commit hash
+```
+
+### Option B: Local Path Reference (Recommended for Local Dev)
 ```yaml
 dependencies:
   flutter_clean_core:
