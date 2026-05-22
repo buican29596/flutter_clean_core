@@ -1,0 +1,74 @@
+name: flutter_clean_core
+description: "Flutter Clean Architecture Core Package with BLoC"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_screenutil: ^5.9.3
+  cached_network_image: ^3.4.1
+  google_fonts: ^6.2.1
+
+  # State Management
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
+
+  # Dependency Injection
+  get_it: ^9.2.1
+  injectable: ^2.5.0
+
+  # Networking
+  dio: ^5.9.2
+  pretty_dio_logger: ^1.4.0
+  connectivity_plus: ^6.1.4
+
+  # Routing
+  go_router: ^16.3.0
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+  # Data / Serialization
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Local Storage
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.3
+
+  # Utilities
+  logger: ^2.5.0
+  intl: ^0.20.2
+  webview_flutter: ^4.13.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code Generation
+  build_runner: ^2.4.15
+  freezed: ^3.2.3
+  json_serializable: ^6.9.5
+  injectable_generator: ^2.6.2
+
+  # Testing
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.4
+
+  # Linting
+  very_good_analysis: ^7.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
