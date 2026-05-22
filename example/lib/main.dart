@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_clean_core/flutter_clean_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,74 @@ void main() async {
 
   runApp(const DemoApp());
 }
+
+// ═════════════════════════════════════════════════════════════════
+// 0. GOROUTER CONFIGURATION & REFRESH STREAM ADAPTER
+// ═════════════════════════════════════════════════════════════════
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+          (dynamic _) => notifyListeners(),
+        );
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
+final GoRouter _router = GoRouter(
+  initialLocation: '/',
+  refreshListenable: GoRouterRefreshStream(getIt<AuthStatusCubit>().stream),
+  redirect: (context, state) {
+    final authState = getIt<AuthStatusCubit>().state;
+    final isLoggedIn = authState.status == AuthStatus.authenticated;
+    final isLoggingIn = state.matchedLocation == '/login';
+
+    if (!isLoggedIn) {
+      return '/login';
+    }
+
+    if (isLoggedIn && isLoggingIn) {
+      return '/';
+    }
+
+    return null;
+  },
+  routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginSandboxScreen(),
+    ),
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const MainSandboxScreen(),
+    ),
+    GoRoute(
+      path: '/details',
+      builder: (context, state) {
+        final item = state.extra as DemoItem;
+        return DetailSandboxScreen(item: item);
+      },
+    ),
+    GoRoute(
+      path: '/webview',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, String>;
+        return AppWebView(
+          url: extra['url']!,
+          title: extra['title']!,
+        );
+      },
+    ),
+  ],
+);
 
 // ═════════════════════════════════════════════════════════════════
 // 1. DATA LAYER (MOCK MODEL, DATASOURCE, REPOSITORY)
@@ -191,39 +260,15 @@ class DemoApp extends StatelessWidget {
         return BlocBuilder<ThemeCubit, ThemeMode>(
           bloc: getIt<ThemeCubit>(),
           builder: (context, themeMode) {
-            return MaterialApp(
+            return MaterialApp.router(
               title: 'Clean Core Demo',
               themeMode: themeMode,
               theme: AppTheme.lightTheme,
               darkTheme: AppTheme.darkTheme,
               debugShowCheckedModeBanner: false,
-              home: const RootGatekeeper(),
+              routerConfig: _router,
             );
           },
-        );
-      },
-    );
-  }
-}
-
-class RootGatekeeper extends StatelessWidget {
-  const RootGatekeeper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AuthStatusCubit, AuthStatusState>(
-      bloc: getIt<AuthStatusCubit>(),
-      builder: (context, state) {
-        if (state.status == AuthStatus.authenticated) {
-          return const MainSandboxScreen();
-        } else if (state.status == AuthStatus.unauthenticated) {
-          return const LoginSandboxScreen();
-        }
-        // Splash Loader
-        return const Scaffold(
-          body: Center(
-            child: AppLoading(size: 60),
-          ),
         );
       },
     );
@@ -442,13 +487,7 @@ class _MainSandboxScreenState extends State<MainSandboxScreen> {
                           vertical: 8,
                         ),
                         child: ListTile(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => DetailSandboxScreen(item: item),
-                              ),
-                            );
-                          },
+                          onTap: () => context.go('/details', extra: item),
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(8.r),
                             child: AppImage(
@@ -542,13 +581,12 @@ class DetailSandboxScreen extends StatelessWidget {
   final DemoItem item;
 
   void _openProductWebView(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AppWebView(
-          url: 'https://flutter.dev',
-          title: item.title,
-        ),
-      ),
+    context.push(
+      '/webview',
+      extra: {
+        'url': 'https://flutter.dev',
+        'title': item.title,
+      },
     );
   }
 
